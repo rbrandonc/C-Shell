@@ -1,0 +1,2 @@
+thsh : thsh.c
+	gcc thsh.c Functions.c -o thsh

@@ -1,0 +1,52 @@
+COMP 530
+Lab 1 - Tarheel Shell
+I certify that no unauthorized assistance has been received or given in the completion of this work.
+Brandon Clark
+
+***Process***
+
+Step 1 for me was to correctly parse my input. I ignorantly did not read the entire instruction list, and was unaware of the strtok() function, so I wrote my parsing code from scratch. After I worked out how to parse a single command, I used that same logic to fill a "2 dimensional array" (char ***, each row does not have the same width so I guess it's not really an array in the sense of a matrix) with my commands, where each "row" is a command (each char** points to the first element in an array of char*). I used the pipe character as a denotion that a new command was beginning. For input/output redirection, I just placed the character and any number associated with it in an array item, and the corrosponding file in the next element in the array. This made it easy to detect if there was any in/out redirects and what file to open().
+
+The next step was to get something to execute. After I read countless man pages I was able to create a test array that exec would accept and run. Then I implemented the fork logic using notes from class to execute the same test array. Then after reading another set of man pages for pipe(), a couple hours doddling pictures of how piping is supposed to work, and a hundred thousand bugs later, I was able to get the commands from the multidimensional array to pass data to their successors.
+
+At this point my code was getting quite messy, so I refactored as much as I could into Functions.c, wrote a few helper functions for repetetive code, and rewrote some other bits to make use of the new helper functions. I also wrote some functions to shorten thsh.c as to increase its readablity.
+
+Next was a few small bits of logic. Replacing environment variables in commands with their values, detecting when the user enters a built in command by checking the first argument in the command array, adding a few helper commands to make printing output easier, as well as the logic for the other built in commands.
+
+My execution logic is basically:
+
+1. Check for input redicrection
+	- open file descriptor if detected, place it into "input"
+2. Create a pipe
+3. Fork
+4 In the child
+	- replace STDIN with value in "input"
+	- If a successor command exists, put the write end of the pipe into STDOUT
+	- If there is no successor, check for output redirection, direct to that file if detected
+	- Close the read end of the pipe
+	- exec the command at position 0
+	- Print error message if exec fails
+5. Print error if fork failed
+6. In the parent
+	- If the child was not set to run in the background, wait for it to return
+	- If that was the last command, return to the shell prompt
+	- If there are more commands, advance the command pointer to the next command
+	- Save output of last command in "input" and return to step 2
+
+***Included Files***
+
+- thsh.c
+
+This is the main file. It handles the flow of data between commands as well as to and from files. It also prints useful debugging information.
+
+- Functions.c
+
+This file contains functions that get input from the command line, parse that information, identify and execute built-in commands, as well as a few small helper functions.
+
+- Functions.h
+
+Just the header file for Functions.c.
+
+- definitions.h
+
+This file contains a few useful constants that are used in both thsh.c and Functions.c.
